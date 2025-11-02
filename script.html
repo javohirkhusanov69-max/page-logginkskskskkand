@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ByTrox</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@800&display=swap');
+body, html {
+  margin: 0;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+  font-family: 'Orbitron', sans-serif;
+  flex-direction: column;
+}
+
+.box {
+  padding: 130px 40px;
+  border: 2px solid #ff0000;
+  border-radius: 15px;
+  text-align: center;
+  background: url('/images/Logo.png') round;
+  box-shadow: 0 0 25px #ff0000, 0 0 35px #ffffff66, inset 0 0 20px #ff0000, inset 0 0 30px #ffffff44;
+  max-width: 300px;
+  width: 100%;
+}
+
+#v {
+  font-size: 5em;
+  color: #ff2b2b;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000, 0 0 45px #ff0000, 0 0 60px #ff0000;
+  margin-bottom: 20px;
+}
+
+#contact-container {
+  margin-top: 180px;
+}
+
+#contact {
+  font-size: 1.4em;
+  font-weight: 900;
+  padding: 30px 30px;
+  color: #fff;
+  background: blue;
+  border: none;
+  border-radius: 17px;
+  box-shadow: 0 0 15px blue, 0 0 30px white;
+  cursor: pointer;
+  transition: 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+#contact:hover {
+  box-shadow: 0 0 25px blue, 0 0 40px white;
+}
+
+</style>
+</head>
+<body>
+<div class="box">
+  <div id="v">0.00</div>
+</div>
+
+<div id="contact-container">
+    <a id="contact" href="https://t.me/bytrox_1" target="_blank">CONTACT US</a>
+</div>
+
+
+<script>
+  function generateRandomValue() {
+    const min = 1.00;
+    const max = 28.00;
+    const valueDisplay = document.getElementById("v");
+    let interval;
+
+    const randomText = () => (Math.random() * (max - min) + min).toFixed(2);
+
+    interval = setInterval(() => {
+      valueDisplay.innerText = randomText();
+    }, 50);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      valueDisplay.innerText = randomText();
+
+      const minDelaySeconds = 14;
+      const maxDelaySeconds = 18;
+      const randomDelay = Math.random() * (maxDelaySeconds - minDelaySeconds) + minDelaySeconds;
+      const nextDelay = randomDelay * 1000;
+
+      console.log(`Next run in: ${randomDelay.toFixed(2)} seconds`);
+
+      setTimeout(generateRandomValue, nextDelay);
+
+    }, 2000);
+  }
+
+  setTimeout(generateRandomValue, 1000);
+</script>
+</body>
+</html>
