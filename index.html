@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body, html {height: 100%; margin: 0; display: flex; justify-content: center; align-items: center; font-family: Arial, sans-serif; color: white; background: black; background-color: #000; animation: a 15s ease infinite;}
+    @keyframes a {0% {background-color: #000;} 50% {background-color: #1a0000;} 100% {background-color: #000;}}
+    #tsparticles {position: fixed; width: 100%; height: 100%; z-index: 0; top: 0; left: 0;}
+    #onlineUsers {position: fixed; top: 10px; right: 29px; font-size: 16px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 8px; border: 1px solid white; box-shadow: 0px 0px 8px rgba(0,0,0,0.5);}
+    #pageLogo {width: 200px; height: 200px; background-image: url('https://bytroxx.zya.me/images/Logo.png'); background-size: cover; background-position: center; margin: 0 auto 20px;}
+    .login-container {display: flex; flex-direction: column; align-items: center; text-align: center; padding: 30px 25px; border-radius: 15px; border: 2px solid red; background-color: rgba(0,0,0,0.5); width: 100%; max-width: 350px; box-sizing: border-box; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.7); z-index: 1; position: relative;}
+    h2 {margin-bottom: 20px;}
+    input[type="password"].code {width: 100%; margin: 10px 0; padding: 12px; border: none; border-radius: 10px; background-color: #555; color: white; font-size: 16px; box-sizing: border-box;}
+    .betting-options {display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0; width: 100%;}
+    .betting-options .option {flex: 1 1 calc(50% - 8px); max-width: calc(50% - 8px); padding: 8px 5px; border-radius: 6px; background-color: #333; color: #fff; font-size: 14px; cursor: pointer; text-align: center; transition: background-color 0.2s, border 0.2s, color 0.2s; border: 1px solid #333; box-sizing: border-box;}
+    .betting-options .option:nth-last-child(1):nth-child(odd) {max-width: 100%; flex: 1 1 100%;}
+    .betting-options .option.selected {background-color: red; color: black; font-weight: bold; border: 1px solid white;}
+    input[type="submit"] {width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; background-color: red; color: white; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.3s;}
+    input[type="submit"]:hover {background-color: #cc0000;}
+    .icon-container {margin-top: 25px; display: flex; justify-content: center; gap: 25px;}
+    .icon-container a {color: #fff; font-size: 28px; text-decoration: none; transition: color 0.3s;}
+    .icon-container a:hover {color: red;}
+  </style>
+</head>
+<body>
+  <div id="tsparticles"></div>
+  <div id="onlineUsers">BYTROX SCRIPT</div>
+
+  <div class="login-container">
+    <div id="pageLogo"></div>
+    <h2>Log in</h2>
+
+    <form id="loginForm">
+      <input type="password" class="code" id="activationCode" placeholder="Activation code" required>
+
+      <div class="betting-options">
+        <div class="option" data-value="1xBet">1xBet</div>
+        <div class="option" data-value="Linebet">Linebet</div>
+        <div class="option" data-value="Dbbet">Dbbet</div>
+        <div class="option" data-value="888Starz">888Starz</div>
+        <div class="option" data-value="Mostbet">Mostbet</div>
+        <div class="option" data-value="MelBet">MelBet</div>
+      </div>
+
+      <input type="hidden" id="selectedPlatform" name="platform" value="">
+      <div id="err" style="display:none;">
+        <span style="color:red;">Error activation code</span>
+      </div>
+
+      <input type="submit" id="submitButton" value="Activate">
+    </form>
+
+    <div class="icon-container">
+      <a href="https://t.me/ByTroX_Nova" target="_blank" title="تابعنا على تليجرام"><i class="fab fa-telegram"></i></a>
+      <a href="https://t.me/bytrox_1" target="_blank" title="شراء كود التفعيل"><i class="fas fa-shopping-cart"></i></a>
+    </div>
+  </div>
+
+  <!-- particles lib -->
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
+
+  <!-- Firebase (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+<script>
+    // Betting option selection (unchanged)
+    document.querySelectorAll('.betting-options .option').forEach(o => {
+        o.addEventListener('click', function() {
+            document.querySelectorAll('.betting-options .option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            this.classList.add('selected');
+            document.getElementById('selectedPlatform').value = this.getAttribute('data-value');
+        });
+    });
+
+    // ----- Firebase init -----
+    // Config taken from JSON you provided
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1_XCbC777hKwxlilhMeq5Hpty1dvDT1I",
+      authDomain: "giper-8fd92.firebaseapp.com",
+      databaseURL: "https://giper-8fd92-default-rtdb.firebaseio.com",
+      projectId: "giper-8fd92",
+      storageBucket: "giper-8fd92.appspot.com",
+      messagingSenderId: "485740337398",
+      appId: "1:485740337398:web:ab901fd4f28219ea5834d7"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    // Submit handler: check users/<CODE> exists in Realtime DB
+    document.getElementById('submitButton').onclick = function(e) {
+      e.preventDefault();
+
+      var cEl = document.getElementById('activationCode');
+      var codeVal = String(cEl.value || '').trim();
+      var p = document.getElementById('selectedPlatform').value;
+
+      // platform must be selected (keeps original behavior)
+      if (!p) {
+          alert("Please select a betting platform.");
+          return;
+      }
+
+      if (!codeVal) {
+        document.getElementById('err').style.display = 'block';
+        return;
+      }
+
+      // Normalize code if you want (e.g., uppercase)
+      // let nodeKey = codeVal.toUpperCase();
+      let nodeKey = codeVal;
+
+      // Reference to users/<CODE>
+      const userRef = database.ref('users/' + nodeKey);
+
+      // Read once
+      userRef.once('value').then(snapshot => {
+        if (snapshot.exists()) {
+          // success -> navigate to success page (script.html)
+          // if you prefer replacing html with returned content, change here.
+          window.location.href = 'script.html';
+        } else {
+          // not found -> show error
+          document.getElementById('err').style.display = 'block';
+        }
+      }).catch(error => {
+        console.error('Firebase error:', error);
+        // show error to user
+        document.getElementById('err').style.display = 'block';
+      });
+    };
+
+    // particles init (unchanged)
+    tsParticles.load("tsparticles", {
+            background: { color: { value: "#000000" } },
+            fpsLimit: 90,
+            interactivity: {
+                events: { onHover: { enable: true, mode: "grab" }, resize: true },
+                modes: { grab: { distance: 130, links: { opacity: 0.6 } } }
+            },
+            particles: {
+                number: { value: 500, density: { enable: true, area: 900 } },
+                color: { value: ["#FF0000", "#FFFFFF"] },
+                shape: { type: "circle" },
+                opacity: { value: 0.7, random: true },
+                size: { value: { min: 2, max: 4 }, random: true },
+                links: {
+                    enable: true,
+                    distance: 100,
+                    color: "#FF4500",
+                    opacity: 0.5,
+                    width: 1
+                },
+                move: {
+                    enable: true,
+                    speed: 1,
+                    direction: "none",
+                    straight: false,
+                    outModes: { default: "bounce" }
+                }
+            },
+            detectRetina: true
+    });
+</script>
+
+</body>
+  </html>
