@@ -13,7 +13,7 @@
     #pageLogo {width: 200px; height: 200px; background-image: url('favicon.png'); background-size: cover; background-position: center; margin: 0 auto 20px;}
     .login-container {display: flex; flex-direction: column; align-items: center; text-align: center; padding: 30px 25px; border-radius: 15px; border: 2px solid red; background-color: rgba(0,0,0,0.5); width: 100%; max-width: 350px; box-sizing: border-box; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.7); z-index: 1; position: relative;}
     h2 {margin-bottom: 20px;}
-    input[type="password"].code {width: 100%; margin: 10px 0; padding: 12px; border: none; border-radius: 10px; background-color: #555; color: white; font-size: 16px; box-sizing: border-box;}
+    input[type="text"].code {width: 100%; margin: 10px 0; padding: 12px; border: none; border-radius: 10px; background-color: #555; color: white; font-size: 16px; box-sizing: border-box;}
     .betting-options {display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0; width: 100%;}
     .betting-options .option {flex: 1 1 calc(50% - 8px); max-width: calc(50% - 8px); padding: 8px 5px; border-radius: 6px; background-color: #333; color: #fff; font-size: 14px; cursor: pointer; text-align: center; transition: background-color 0.2s, border 0.2s, color 0.2s; border: 1px solid #333; box-sizing: border-box;}
     .betting-options .option:nth-last-child(1):nth-child(odd) {max-width: 100%; flex: 1 1 100%;}
@@ -34,7 +34,7 @@
     <h2>Log in</h2>
 
     <form id="loginForm">
-      <input type="password" class="code" id="activationCode" placeholder="Activation code" required>
+      <input type="text" class="code" id="activationCode" placeholder="Activation code" required>
 
       <div class="betting-options">
         <div class="option" data-value="1xBet">1xBet</div>
@@ -59,15 +59,11 @@
     </div>
   </div>
 
-  <!-- particles lib -->
   <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.12.0/tsparticles.bundle.min.js"></script>
-
-  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
 <script>
-    // Betting option selection (unchanged)
     document.querySelectorAll('.betting-options .option').forEach(o => {
         o.addEventListener('click', function() {
             document.querySelectorAll('.betting-options .option').forEach(opt => {
@@ -78,8 +74,6 @@
         });
     });
 
-    // ----- Firebase init -----
-    // Config taken from JSON you provided
     const firebaseConfig = {
       apiKey: "AIzaSyB1_XCbC777hKwxlilhMeq5Hpty1dvDT1I",
       authDomain: "giper-8fd92.firebaseapp.com",
@@ -93,7 +87,11 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // Submit handler: check users/<CODE> exists in Realtime DB
+    function markOneTimeCodeUsed(nodeRef, platform) {
+      const updates = { used: true, usedAt: Date.now(), usedOnPlatform: platform };
+      return nodeRef.update(updates);
+    }
+
     document.getElementById('submitButton').onclick = function(e) {
       e.preventDefault();
 
@@ -101,9 +99,8 @@
       var codeVal = String(cEl.value || '').trim();
       var p = document.getElementById('selectedPlatform').value;
 
-      // platform must be selected (keeps original behavior)
       if (!p) {
-          alert("Please select a betting platform.");
+          alert("Please select a betting platform");
           return;
       }
 
@@ -112,40 +109,43 @@
         return;
       }
 
-      // Normalize code if you want (e.g., uppercase)
-      // let nodeKey = codeVal.toUpperCase();
       let nodeKey = codeVal;
-
-      // Reference to users/<CODE>
       const userRef = database.ref('users/' + nodeKey);
 
-      // Read once
       userRef.once('value').then(snapshot => {
-        if (snapshot.exists()) {
-          // success -> navigate to success page (script.html)
-          // if you prefer replacing html with returned content, change here.
-          window.location.href = 'script.html';
-        } else {
-          // not found -> show error
+        if (!snapshot.exists()) {
           document.getElementById('err').style.display = 'block';
+          return;
         }
+
+        const used = snapshot.child('used').val();
+        if (used) {
+          document.getElementById('err').style.display = 'block';
+          return;
+        }
+
+        markOneTimeCodeUsed(userRef, p).then(() => {
+          window.location.href = 'script.html';
+        }).catch(err => {
+          console.error('Mark used error:', err);
+          document.getElementById('err').style.display = 'block';
+        });
+
       }).catch(error => {
-        console.error('Firebase error:', error);
-        // show error to user
+        console.error(' error:', error);
         document.getElementById('err').style.display = 'block';
       });
     };
 
-    // particles init (unchanged)
     tsParticles.load("tsparticles", {
             background: { color: { value: "#000000" } },
-            fpsLimit: 90,
+            fpsLimit: 60,
             interactivity: {
                 events: { onHover: { enable: true, mode: "grab" }, resize: true },
                 modes: { grab: { distance: 130, links: { opacity: 0.6 } } }
             },
             particles: {
-                number: { value: 500, density: { enable: true, area: 900 } },
+                number: { value: 300, density: { enable: true, area: 900 } },
                 color: { value: ["#FF0000", "#FFFFFF"] },
                 shape: { type: "circle" },
                 opacity: { value: 0.7, random: true },
@@ -170,4 +170,4 @@
 </script>
 
 </body>
-  </html>
+</html>
